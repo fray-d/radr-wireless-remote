@@ -45,3 +45,4 @@ We wanted an open source wireless remote that could control not just the ossm, b
 CERN Open Hardware Licence Version 2 - Strongly Reciprocal
 Contributions to this GitHub repository will assume release under the same license.
 
+<!-- rad-app submodule smoke test; safe to remove -->
