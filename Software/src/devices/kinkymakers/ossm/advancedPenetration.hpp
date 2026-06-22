@@ -48,6 +48,8 @@ class OSSMAdvanced : public Device {
 
     TextButton *pauseStopButton = nullptr;
 
+    TextButton *commandText = nullptr;
+
     std::vector<TextButton *> buttons = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
     EncoderBar *speedBar = nullptr;
@@ -247,6 +249,9 @@ class OSSMAdvanced : public Device {
                                                       .mapToRightLed = true});
 
         pauseStopButton = draw<TextButton>("Pause", pins::BTN_UNDER_C, DISPLAY_WIDTH / 2 - 60, Display::HEIGHT - 25, 120, 30);
+
+        commandText = draw<TextButton>("", NO_PIN, DISPLAY_WIDTH / 2 - 60, -2, 120, 30);
+        commandText->setColors(Colors::black, Colors::white);
 
         updateTabAppearance();
         syncRightEncoder();
@@ -647,8 +652,10 @@ class OSSMAdvanced : public Device {
         }
         int index = baseIndex;
         uint16_t newColor = advancedColors[index];
+        commandText->setText(controlNames[index].c_str());
         if (stateMachine->is("device_menu"_s)) {
             index = modifierIndex;
+            commandText->setText(modifierNames[index].c_str());
         }
         buttons[index]->setColors(newColor, Colors::black);
 
