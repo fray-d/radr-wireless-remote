@@ -66,7 +66,7 @@ class OSSMAdvanced : public Device {
     }
 
     const char *getName() override { return "OSSM - Advanced Mode"; }
-    NimBLEUUID getServiceUUID() override { return NimBLEUUID(OSSM_ADVANCED_SERVICE_ID); }
+    NimBLEUUID getServiceUUID() override { return NimBLEUUID(LITE_SERVICE_ID); }
 
     float getMaxSteps() {
         uint8_t maxSteps = 4;

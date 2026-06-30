@@ -26,9 +26,9 @@ void initRegistry() {
     // Known explicit services
     registry.try_emplace(OSSM_SERVICE_ID,
                          [](const NimBLEAdvertisedDevice *advertisedDevice) -> Device * { return new OSSM(advertisedDevice); });
-    registry.try_emplace(OSSM_ADVANCED_SERVICE_ID,
+    registry.try_emplace(LITE_SERVICE_ID,
                          [](const NimBLEAdvertisedDevice *advertisedDevice) -> Device * { return new OSSMAdvanced(advertisedDevice); });
-    registryNames.try_emplace(OSSM_ADVANCED_SERVICE_ID, OSSM_ADVANCED_SERVICE_NAME);
+    registryNames.try_emplace(LITE_SERVICE_ID, OSSM_ADVANCED_SERVICE_NAME);
 
     // Try to read registry.json from LittleFS
     if (LittleFS.exists("/registry.json")) {
