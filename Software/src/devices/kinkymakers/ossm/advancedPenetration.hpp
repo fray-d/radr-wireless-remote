@@ -32,6 +32,8 @@ class OSSMAdvanced : public Device {
     const int16_t tabHeight = 24;
     const int16_t tabGap = 4;
 
+    SemaphoreHandle_t advancedMutex = xSemaphoreCreateMutex();
+
     struct Control {
         float value;
         std::uint8_t minValue = 0;
@@ -259,20 +261,24 @@ class OSSMAdvanced : public Device {
     }
 
     void drawControls() override {
-        device->displayObjects.clear();
-        uint8_t totalGaps = (controlNames.size() - 2) * tabGap;
-        uint8_t tabWidth = (DISPLAY_WIDTH - totalGaps) / (controlNames.size() - 1);
-        for (uint8_t i = 0; i < controlNames.size() - 1; i++) {
-            buttons[i] = draw<TextButton>(String(int(advancedSettings[controlNames[i]].value)), NO_PIN, i * (tabWidth + tabGap), tabY,
-                                          tabWidth, tabHeight);
+        if (xSemaphoreTake(advancedMutex, pdMS_TO_TICKS(5000)) == pdTRUE) {
+            buttons = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+            device->displayObjects.clear();
+            uint8_t totalGaps = (controlNames.size() - 2) * tabGap;
+            uint8_t tabWidth = (DISPLAY_WIDTH - totalGaps) / (controlNames.size() - 1);
+            for (uint8_t i = 0; i < controlNames.size() - 1; i++) {
+                buttons[i] = draw<TextButton>(String(int(advancedSettings[controlNames[i]].value)), NO_PIN, i * (tabWidth + tabGap), tabY,
+                                              tabWidth, tabHeight);
+            }
+
+            draw<TextButton>("Presets", pins::BTN_UNDER_L, -5, Display::HEIGHT - 25, 90, 30);
+            draw<TextButton>("Modifier", pins::BTN_UNDER_R, DISPLAY_WIDTH - 85, Display::HEIGHT - 25, 90, 30);
+
+            drawCommonControls();
+            drawCurveDisplay();
+            onResume();
         }
-
-        draw<TextButton>("Presets", pins::BTN_UNDER_L, -5, Display::HEIGHT - 25, 90, 30);
-        draw<TextButton>("Modifier", pins::BTN_UNDER_R, DISPLAY_WIDTH - 85, Display::HEIGHT - 25, 90, 30);
-        drawCurveDisplay();
-
-        drawCommonControls();
-        onResume();
+        xSemaphoreGive(advancedMutex);
     }
 
     void parseStatus() {
@@ -353,12 +359,16 @@ class OSSMAdvanced : public Device {
     void setButtonsText() {
         if (stateMachine->is("device_menu"_s)) {
             for (uint8_t i = 0; i < modifierNames.size(); i++) {
-                buttons[i]->setText(String(int(advancedSettings[controlNames[baseIndex] + modifierNames[i]].value)));
+                if (buttons[i] != nullptr) {
+                    buttons[i]->setText(String(int(advancedSettings[controlNames[baseIndex] + modifierNames[i]].value)));
+                }
             }
             drawModifierDisplay();
         } else {
             for (int i = 0; i < controlNames.size() - 1; i++) {
-                buttons[i]->setText(String(int(advancedSettings[controlNames[i]].value)));
+                if (buttons[i] != nullptr) {
+                    buttons[i]->setText(String(int(advancedSettings[controlNames[i]].value)));
+                }
             }
             drawCurveDisplay();
         }
@@ -367,10 +377,13 @@ class OSSMAdvanced : public Device {
     void dirtyRunner() {
         while (true) {
             if (readCount > 0) {
-                parseStatus();
-                syncRightEncoder();
-                syncLeftEncoder();
-                setButtonsText();
+                if (xSemaphoreTake(advancedMutex, pdMS_TO_TICKS(5000)) == pdTRUE) {
+                    parseStatus();
+                    syncRightEncoder();
+                    syncLeftEncoder();
+                    setButtonsText();
+                }
+                xSemaphoreGive(advancedMutex);
             }
             vTaskDelay(100);
         }
@@ -506,39 +519,47 @@ class OSSMAdvanced : public Device {
     }
 
     void drawDeviceSettingsMenu() override {
-        device->displayObjects.clear();
-        activeMenu = &settingsMenu;
-        activeMenuCount = settingsMenu.size();
-        drawMenu();
-        TextButton back("Back", pins::BTN_UNDER_L, -5, Display::HEIGHT - 25, 90, 30);
-        TextButton select("Select", pins::BTN_UNDER_R, DISPLAY_WIDTH - 85, Display::HEIGHT - 25, 90, 30);
-        pauseStopButton = draw<TextButton>("Pause", pins::BTN_UNDER_C, DISPLAY_WIDTH / 2 - 60, Display::HEIGHT - 25, 120, 30);
-        back.tick();
-        select.tick();
-        pauseStopButton->tick();
+        if (xSemaphoreTake(advancedMutex, pdMS_TO_TICKS(5000)) == pdTRUE) {
+            buttons = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+            device->displayObjects.clear();
+            activeMenu = &settingsMenu;
+            activeMenuCount = settingsMenu.size();
+            drawMenu();
+            TextButton back("Back", pins::BTN_UNDER_L, -5, Display::HEIGHT - 25, 90, 30);
+            TextButton select("Select", pins::BTN_UNDER_R, DISPLAY_WIDTH - 85, Display::HEIGHT - 25, 90, 30);
+            pauseStopButton = draw<TextButton>("Pause", pins::BTN_UNDER_C, DISPLAY_WIDTH / 2 - 60, Display::HEIGHT - 25, 120, 30);
+            back.tick();
+            select.tick();
+            pauseStopButton->tick();
+        }
+        xSemaphoreGive(advancedMutex);
     }
 
     void drawDeviceMenu() override {
-        activeMenu = nullptr;
-        clearPage();
-        device->displayObjects.clear();
+        if (xSemaphoreTake(advancedMutex, pdMS_TO_TICKS(5000)) == pdTRUE) {
+            activeMenu = nullptr;
+            buttons = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+            clearPage();
+            device->displayObjects.clear();
 
-        uint8_t totalGaps = (modifierNames.size() - 1) * tabGap;
-        uint8_t tabWidth = (DISPLAY_WIDTH - totalGaps) / modifierNames.size();
-        for (uint8_t i = 0; i < modifierNames.size(); i++) {
-            buttons[i] = draw<TextButton>(String(int(advancedSettings[controlNames[baseIndex] + modifierNames[i]].value)), NO_PIN,
-                                          i * (tabWidth + tabGap), tabY, tabWidth, tabHeight);
+            uint8_t totalGaps = (modifierNames.size() - 1) * tabGap;
+            uint8_t tabWidth = (DISPLAY_WIDTH - totalGaps) / modifierNames.size();
+            for (uint8_t i = 0; i < modifierNames.size(); i++) {
+                buttons[i] = draw<TextButton>(String(int(advancedSettings[controlNames[baseIndex] + modifierNames[i]].value)), NO_PIN,
+                                              i * (tabWidth + tabGap), tabY, tabWidth, tabHeight);
+            }
+
+            draw<TextButton>("Back", pins::BTN_UNDER_L, -5, Display::HEIGHT - 25, 90, 30);
+            draw<TextButton>("Back", pins::BTN_UNDER_R, DISPLAY_WIDTH - 85, Display::HEIGHT - 25, 90, 30);
+
+            drawCommonControls();
+
+            drawModifierDisplay();
+
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+            xTaskCreatePinnedToCore(drawModifierTask, "drawModifierTask", 5 * configMINIMAL_STACK_SIZE, device, 5, NULL, 1);
         }
-
-        draw<TextButton>("Back", pins::BTN_UNDER_L, -5, Display::HEIGHT - 25, 90, 30);
-        draw<TextButton>("Back", pins::BTN_UNDER_R, DISPLAY_WIDTH - 85, Display::HEIGHT - 25, 90, 30);
-
-        drawCommonControls();
-
-        drawModifierDisplay();
-
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-        xTaskCreatePinnedToCore(drawModifierTask, "drawModifierTask", 5 * configMINIMAL_STACK_SIZE, device, 5, NULL, 1);
+        xSemaphoreGive(advancedMutex);
     }
 
     bool setSpeed(uint8_t speed) {
@@ -602,40 +623,50 @@ class OSSMAdvanced : public Device {
     void syncLeftEncoder() { leftEncoder.setEncoderValue(advancedSettings["SP"].value); }
 
     void onLeftBumperClick() override {
-        if (stateMachine->is("device_menu"_s)) {
-            modifierIndex = (modifierIndex + modifierNames.size() - 1) % modifierNames.size();
-            drawModifierDisplay();
-        } else {
-            baseIndex = (baseIndex + controlNames.size() - 2) % (controlNames.size() - 1);
-            modifierIndex = 0;
-            drawCurveDisplay();
+        if (xSemaphoreTake(advancedMutex, pdMS_TO_TICKS(5000)) == pdTRUE) {
+            if (stateMachine->is("device_menu"_s)) {
+                modifierIndex = (modifierIndex + modifierNames.size() - 1) % modifierNames.size();
+                drawModifierDisplay();
+            } else {
+                baseIndex = (baseIndex + controlNames.size() - 2) % (controlNames.size() - 1);
+                modifierIndex = 0;
+                drawCurveDisplay();
+            }
+            syncRightEncoder();
+            updateTabAppearance();
         }
-        syncRightEncoder();
-        updateTabAppearance();
+        xSemaphoreGive(advancedMutex);
     }
 
     void onRightBumperClick() override {
-        if (stateMachine->is("device_menu"_s)) {
-            modifierIndex = (modifierIndex + 1) % modifierNames.size();
-            drawModifierDisplay();
-        } else {
-            baseIndex = (baseIndex + 1) % (controlNames.size() - 1);
-            modifierIndex = 0;
-            drawCurveDisplay();
+        if (xSemaphoreTake(advancedMutex, pdMS_TO_TICKS(5000)) == pdTRUE) {
+            if (stateMachine->is("device_menu"_s)) {
+                modifierIndex = (modifierIndex + 1) % modifierNames.size();
+                drawModifierDisplay();
+            } else {
+                baseIndex = (baseIndex + 1) % (controlNames.size() - 1);
+                modifierIndex = 0;
+                drawCurveDisplay();
+            }
+            syncRightEncoder();
+            updateTabAppearance();
         }
-        syncRightEncoder();
-        updateTabAppearance();
+        xSemaphoreGive(advancedMutex);
     }
 
     void onRightEncoderChange(int value) override {
         if (stateMachine->is("device_menu"_s)) {
-            buttons[modifierIndex]->setText(String(value));
-            setModifierValue(value);
+            if (buttons[modifierIndex] != nullptr) {
+                buttons[modifierIndex]->setText(String(value));
+                setModifierValue(value);
+            }
             speedBar->isFirstDraw = true;
             return;
         }
-        buttons[baseIndex]->setText(String(value));
-        setBaseValue(value);
+        if (buttons[baseIndex] != nullptr) {
+            buttons[baseIndex]->setText(String(value));
+            setBaseValue(value);
+        }
     }
 
     void onLeftEncoderChange(int value) override {
@@ -648,18 +679,24 @@ class OSSMAdvanced : public Device {
   private:
     void updateTabAppearance() {
         for (int i = 0; i < controlNames.size() - 1; i++) {
-            buttons[i]->setColors(Colors::disabled, Colors::black);
+            if (buttons[i] != nullptr) {
+                buttons[i]->setColors(Colors::disabled, Colors::black);
+            }
         }
         int index = baseIndex;
         uint16_t newColor = advancedColors[index];
-        commandText->setText(controlNames[index].c_str());
+        if (buttons[index] != nullptr) {
+            commandText->setText(controlNames[index].c_str());
+        }
         if (stateMachine->is("device_menu"_s)) {
             index = modifierIndex;
             commandText->setText(modifierNames[index].c_str());
         }
-        buttons[index]->setColors(newColor, Colors::black);
+        if (buttons[index] != nullptr) {
+            buttons[index]->setColors(newColor, Colors::black);
 
-        valueBar->setColor(newColor);
+            valueBar->setColor(newColor);
+        }
     }
 };
 
