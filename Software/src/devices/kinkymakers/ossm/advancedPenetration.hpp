@@ -239,7 +239,7 @@ class OSSMAdvanced : public Device {
         draw<TextButton>("<<", pins::BTN_L_SHOULDER, -5, -5, 70, 30);
         draw<TextButton>(">>", pins::BTN_R_SHOULDER, DISPLAY_WIDTH - 65, -5, 70, 30);
         speedBar = draw<EncoderBar>(EncoderBar::Props{.encoder = &leftEncoder,
-                                                      .value = &advancedSettings["SP"].value,
+                                                      .value = &advancedSettings["Speed"].value,
                                                       .pos_x = 0,
                                                       .pos_y = (int16_t)(Display::PageY + 35),
                                                       .mapToLeftLed = true});
@@ -563,7 +563,7 @@ class OSSMAdvanced : public Device {
     }
 
     bool setSpeed(uint8_t speed) {
-        Control *edit = &advancedSettings["SP"];
+        Control *edit = &advancedSettings["Speed"];
         speed = constrain(speed, edit->minValue, edit->maxValue);
         if (speed == edit->value && !hasLeftEncoderChanged(true)) {
             return true;
@@ -620,7 +620,7 @@ class OSSMAdvanced : public Device {
         valueBar->setValue(&c->value);
     };
 
-    void syncLeftEncoder() { leftEncoder.setEncoderValue(advancedSettings["SP"].value); }
+    void syncLeftEncoder() { leftEncoder.setEncoderValue(advancedSettings["Speed"].value); }
 
     void onLeftBumperClick() override {
         if (xSemaphoreTake(advancedMutex, pdMS_TO_TICKS(5000)) == pdTRUE) {
