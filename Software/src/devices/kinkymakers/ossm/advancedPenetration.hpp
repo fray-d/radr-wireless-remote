@@ -70,6 +70,8 @@ class OSSMAdvanced : public Device {
     const char *getName() override { return "OSSM - Advanced Mode"; }
     NimBLEUUID getServiceUUID() override { return NimBLEUUID(LITE_SERVICE_ID); }
 
+    bool needsPersistentLeftEncoderMonitoring() const override { return true; }
+
     float getMaxSteps() {
         uint8_t maxSteps = 4;
         for (std::string controlName : controlNames) {
@@ -474,7 +476,6 @@ class OSSMAdvanced : public Device {
             if (device != nullptr) {
                 currentLeftShoulderState = digitalRead(pins::BTN_L_SHOULDER);
                 currentRightShoulderState = digitalRead(pins::BTN_R_SHOULDER);
-                currentLeftEncoderValue = leftEncoder.readEncoder();
                 currentRightEncoderValue = rightEncoder.readEncoder();
 
                 if (currentLeftShoulderState == LOW && lastLeftShoulderState == HIGH) {
@@ -482,11 +483,6 @@ class OSSMAdvanced : public Device {
                 }
                 if (currentRightShoulderState == LOW && lastRightShoulderState == HIGH) {
                     device->onRightBumperClick();
-                }
-                if (currentLeftEncoderValue != lastLeftEncoderValue) {
-                    setNotIdle("left_encoder");
-                    device->onLeftEncoderChange(currentLeftEncoderValue);
-                    lastLeftEncoderValue = currentLeftEncoderValue;
                 }
                 if (currentRightEncoderValue != lastRightEncoderValue) {
                     setNotIdle("right_encoder");
