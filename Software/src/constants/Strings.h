@@ -4,8 +4,7 @@
 #include "Arduino.h"
 
 static const char DEVICE_SEARCH_TITLE[] PROGMEM = "Device Search";
-static const char DEVICE_SEARCH_DESCRIPTION[] PROGMEM =
-    "Searching for nearby devices...";
+static const char DEVICE_SEARCH_DESCRIPTION[] PROGMEM = "Searching for nearby devices...";
 
 static const char DEVICE_STOP_TITLE[] PROGMEM = "Device Stopped";
 static const char DEVICE_STOP_DESCRIPTION[] PROGMEM =
@@ -29,7 +28,6 @@ static const char SLEEP_NAME[] PROGMEM = "Sleep";
 
 static const char GO_BACK_NAME[] PROGMEM = "Go Back";
 static const char WIFI_SETTINGS_NAME[] PROGMEM = "WiFi Settings";
-static const char PAIRING_NAME[] PROGMEM = "Pairing";
 static const char UPDATE_NAME[] PROGMEM = "Update Device";
 static const char RESTART_NAME[] PROGMEM = "Restart Device";
 static const char DEEP_SLEEP_NAME[] PROGMEM = "Sleep";
@@ -38,12 +36,10 @@ static const char WIFI_SETTINGS_TITLE[] PROGMEM = "WiFi Settings";
 static const char WIFI_SETTINGS_DESCRIPTION[] PROGMEM =
     "Join the network called 'RADR Setup' to configure WiFi on this "
     "device.";
-static const char WIFI_SETTINGS_QR_VALUE[] PROGMEM =
-    "WIFI:S:RADR Setup;T:nopass;;";
+static const char WIFI_SETTINGS_QR_VALUE[] PROGMEM = "WIFI:S:RADR Setup;T:nopass;;";
 
 static const char WIFI_CONNECTED_TITLE[] PROGMEM = "Wi-Fi Connected";
-static const char WIFI_CONNECTED_DESCRIPTION[] PROGMEM =
-    "Your OSSM Remote is now connected to WiFi.";
+static const char WIFI_CONNECTED_DESCRIPTION[] PROGMEM = "Your OSSM Remote is now connected to WiFi.";
 
 static const char UPDATING_TITLE[] PROGMEM = "Updating";
 static const char UPDATING_DESCRIPTION[] PROGMEM = "Checking for updates...";

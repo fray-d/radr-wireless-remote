@@ -1,8 +1,7 @@
 #ifndef SOFTWARE_SETTINGPERCENTS_H
 #define SOFTWARE_SETTINGPERCENTS_H
 
-enum class StrokePatterns
-{
+enum class StrokePatterns {
     SimpleStroke,
     TeasingPounding,
     RoboStroke,
@@ -12,13 +11,12 @@ enum class StrokePatterns
     Insist,
 };
 
-struct SettingPercents
-{
-    float speed = 0;
-    float stroke = 50;
-    float sensation = 50;
-    float depth = 10; // default to 10% depth
+struct SettingPercents {
+    float speed = 0.0;
+    float min = 50.0;
+    float sensation = 50.0;
+    float max = 10.0;  // default to 10% depth
     StrokePatterns pattern = StrokePatterns::SimpleStroke;
 };
 
-#endif // SOFTWARE_SETTINGPERCENTS_H
+#endif  // SOFTWARE_SETTINGPERCENTS_H

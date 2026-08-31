@@ -10,8 +10,7 @@
 #include <components/LinearRailGraph.h>
 
 using namespace sml;
-void drawControllerTask(void *pvParameters)
-{
+void drawControllerTask(void *pvParameters) {
     clearPage();
     ESP_LOGI(TAG, "IN THE CONTROL TASK");
 
@@ -19,8 +18,7 @@ void drawControllerTask(void *pvParameters)
 
     // wait until the device is connected
     ESP_LOGI(TAG, "Waiting for device to connect");
-    while (!device->isConnected)
-    {
+    while (!device->isConnected) {
         // TODO: UI / UX here.
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
@@ -48,26 +46,18 @@ void drawControllerTask(void *pvParameters)
     int lastRightEncoderValue = -1;
     int currentRightEncoderValue = -1;
 
-    auto isInCorrectState = []()
-    {
-        return stateMachine->is("device_draw_control"_s) ||
-               stateMachine->is("simple_penetration_control"_s);
-    };
+    auto isInCorrectState = []() { return stateMachine->is("device_draw_control"_s); };
 
-    while (isInCorrectState() && device != nullptr)
-    {
+    while (isInCorrectState() && device != nullptr) {
         currentLeftShoulderState = digitalRead(pins::BTN_L_SHOULDER);
         currentRightShoulderState = digitalRead(pins::BTN_R_SHOULDER);
 
-        if (currentLeftShoulderState == LOW && lastLeftShoulderState == HIGH)
-        {
+        if (currentLeftShoulderState == LOW && lastLeftShoulderState == HIGH) {
             device->onLeftBumperClick();
         }
-        if (currentRightShoulderState == LOW && lastRightShoulderState == HIGH)
-        {
+        if (currentRightShoulderState == LOW && lastRightShoulderState == HIGH) {
             device->onRightBumperClick();
         }
-
 
         // check if device has persistent left encoder monitoring enabled
         //  if it does, we do not read the left encoder here, as it is being
@@ -83,8 +73,7 @@ void drawControllerTask(void *pvParameters)
 
         currentRightEncoderValue = rightEncoder.readEncoder();
 
-        if (currentRightEncoderValue != lastRightEncoderValue)
-        {
+        if (currentRightEncoderValue != lastRightEncoderValue) {
             setNotIdle("right_encoder");
             device->onRightEncoderChange(currentRightEncoderValue);
             lastRightEncoderValue = currentRightEncoderValue;
@@ -94,19 +83,16 @@ void drawControllerTask(void *pvParameters)
         lastLeftShoulderState = currentLeftShoulderState;
         lastRightShoulderState = currentRightShoulderState;
 
-        for (auto &displayObject : device->displayObjects)
-        {
+        for (auto &displayObject : device->displayObjects) {
             displayObject->tick();
             vTaskDelay(1 / portTICK_PERIOD_MS);
         }
 
-                vTaskDelay(16 / portTICK_PERIOD_MS); // ~60fps for smooth updating.
-
+        vTaskDelay(16 / portTICK_PERIOD_MS);  // ~60fps for smooth updating.
     }
 
     // unique_ptr will clean up automatically when the device is destroyed or vector cleared
-    if (device != nullptr)
-    {
+    if (device != nullptr) {
         device->displayObjects.clear();
     }
 

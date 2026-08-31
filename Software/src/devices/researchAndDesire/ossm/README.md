@@ -21,7 +21,6 @@ set:stroke:<0-100>       # Stroke length percentage
 set:depth:<0-100>        # Penetration depth percentage
 set:sensation:<0-100>    # Sensation intensity percentage
 set:pattern:<0-6>        # Stroke pattern (0-6)
-go:simplePenetration     # Switch to simple penetration mode
 go:strokeEngine          # Switch to stroke engine mode
 go:menu                  # Return to main menu
 ```
@@ -53,7 +52,6 @@ go:menu                  # Return to main menu
 
 - `idle` - Initializing
 - `menu` - Main menu
-- `simplePenetration` - Simple penetration mode
 - `strokeEngine` - Stroke engine mode
 - `error` - Error state
 

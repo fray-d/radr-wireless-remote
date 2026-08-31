@@ -17,16 +17,13 @@ const auto is_valid = [](const Event &event) {
 };
 
 template <typename Event = done>
-const auto hasFilesystemUpdate =
-    [](const Event &event) { return isFilesystemUpdateAvailable; };
+const auto hasFilesystemUpdate = [](const Event &event) { return isFilesystemUpdateAvailable; };
 
 template <typename Event = done>
-const auto hasSoftwareUpdate =
-    [](const Event &event) { return isSoftwareUpdateAvailable; };
+const auto hasSoftwareUpdate = [](const Event &event) { return isSoftwareUpdateAvailable; };
 
 template <typename Event = right_button_pressed>
-const auto isOnline =
-    [](const Event &event) { return WiFiClass::status() == WL_CONNECTED; };
+const auto isOnline = [](const Event &event) { return WiFiClass::status() == WL_CONNECTED; };
 
 template <typename Event = right_button_pressed>
 auto isOption = [](MenuItemE value) {
@@ -47,32 +44,12 @@ auto isOption = [](MenuItemE value) {
 };
 
 template <typename Event = right_button_pressed>
-auto hasDeviceMenu = [](const Event &event) -> bool {
-    return device != nullptr && device->menu.size() > 0;
-};
+auto hasDeviceMenu = [](const Event &event) -> bool { return device != nullptr && device->menu.size() > 0; };
 template <typename Event = left_button_pressed>
-auto hasDeviceSettingsMenu = [](const Event &event) -> bool {
-    return device != nullptr && device->settingsMenu.size() > 0;
-};
+auto hasDeviceSettingsMenu = [](const Event &event) -> bool { return device != nullptr && device->settingsMenu.size() > 0; };
 
 template <typename Event = left_button_pressed>
-auto isPaused = [](const Event &event) -> bool {
-    return device != nullptr && device->isPaused;
-};
+auto isPaused = [](const Event &event) -> bool { return device != nullptr && device->isPaused; };
 
 template <typename Event = left_button_pressed>
-auto isConnected = [](const Event &event) -> bool {
-    return device != nullptr && device->isConnected;
-};
-
-template <typename Event = left_button_pressed>
-auto isSimplePenetrationMode = [](const Event &event) -> bool {
-    return device != nullptr && device->isInSimplePenetrationMode();
-};
-
-// Declared in ossmUpdate.cpp
-extern bool ossmUpdateIsAvailable;
-
-template <typename Event = done>
-const auto hasOssmUpdate =
-    [](const Event &event) { return ossmUpdateIsAvailable; };
+auto isConnected = [](const Event &event) -> bool { return device != nullptr && device->isConnected; };

@@ -25,8 +25,6 @@
 #include "pages/TextPages.h"
 #include "pages/controller.h"
 #include "pages/menus.h"
-#include "pages/ossmUpdate.h"
-#include "pages/pairing.h"
 #include "services/leftEncoderMonitor.h"
 
 // Forward declarations to avoid circular dependencies
@@ -47,15 +45,12 @@ namespace actions {
         vTaskDelay(50 / portTICK_PERIOD_MS);
         if (xSemaphoreTake(displayMutex, pdMS_TO_TICKS(50)) == pdTRUE) {
             if (clearStatusbar) {
-                tft.fillRect(0, 0, Display::WIDTH, Display::HEIGHT,
-                             Colors::black);
+                tft.fillRect(0, 0, Display::WIDTH, Display::HEIGHT, Colors::black);
             } else {
-                tft.fillRect(0, Display::StatusbarHeight, Display::WIDTH,
-                             Display::PageHeight + 32, Colors::black);
+                tft.fillRect(0, Display::StatusbarHeight, Display::WIDTH, Display::PageHeight + 32, Colors::black);
                 // Also clear top left and top right corners to remove buttons
                 tft.fillRect(0, 0, 75, Display::StatusbarHeight, Colors::black);
-                tft.fillRect(Display::WIDTH - 75, 0, 75,
-                             Display::StatusbarHeight, Colors::black);
+                tft.fillRect(Display::WIDTH - 75, 0, 75, Display::StatusbarHeight, Colors::black);
             }
             xSemaphoreGive(displayMutex);
         }
@@ -72,8 +67,7 @@ namespace actions {
     auto disconnectImpl = [](bool quiet) {
         // Safety-critical: Ensure left encoder monitoring is stopped if the
         // device needs it
-        if (device != nullptr &&
-            device->needsPersistentLeftEncoderMonitoring()) {
+        if (device != nullptr && device->needsPersistentLeftEncoderMonitoring()) {
             stopLeftEncoderMonitoring();
         }
 
@@ -98,24 +92,19 @@ namespace actions {
         // flash memory
         return [&page]() {
             clearPage();
-            xTaskCreatePinnedToCore(drawPageTask, "drawPageTask",
-                                    5 * configMINIMAL_STACK_SIZE,
-                                    const_cast<TextPage *>(&page), 5, NULL, 1);
+            xTaskCreatePinnedToCore(drawPageTask, "drawPageTask", 5 * configMINIMAL_STACK_SIZE, const_cast<TextPage *>(&page), 5, NULL, 1);
         };
     };
 
     auto drawControl = []() {
         // Safety-critical: Ensure left encoder monitoring is active if the
         // device needs it
-        if (device != nullptr &&
-            device->needsPersistentLeftEncoderMonitoring()) {
+        if (device != nullptr && device->needsPersistentLeftEncoderMonitoring()) {
             startLeftEncoderMonitoring();
         }
 
         // Single task creation with immediate UI rendering
-        xTaskCreatePinnedToCore(drawControllerTask, "drawControllerTask",
-                                16 * configMINIMAL_STACK_SIZE, device, 5, NULL,
-                                1);
+        xTaskCreatePinnedToCore(drawControllerTask, "drawControllerTask", 16 * configMINIMAL_STACK_SIZE, device, 5, NULL, 1);
     };
 
     auto search = []() { startScanWithTimeout(5000, onScanComplete); };
@@ -131,17 +120,11 @@ namespace actions {
         drawDeviceListMenu();
     };
 
-    auto play = [](BuzzerPattern pattern) {
-        return [](BuzzerPattern pattern) { playBuzzerPattern(pattern); };
-    };
+    auto play = [](BuzzerPattern pattern) { return [](BuzzerPattern pattern) { playBuzzerPattern(pattern); }; };
 
-    constexpr auto startTask = [](auto task, const char *taskName,
-                                  TaskHandle_t handle, uint8_t size = 10,
-                                  uint8_t core = 1) {
+    constexpr auto startTask = [](auto task, const char *taskName, TaskHandle_t handle, uint8_t size = 10, uint8_t core = 1) {
         return [task, taskName, handle, size, core]() mutable {
-            xTaskCreatePinnedToCore(task, taskName,
-                                    size * configMINIMAL_STACK_SIZE, nullptr, 1,
-                                    &handle, core);
+            xTaskCreatePinnedToCore(task, taskName, size * configMINIMAL_STACK_SIZE, nullptr, 1, &handle, core);
         };
     };
 
@@ -174,9 +157,7 @@ namespace actions {
 
     auto drawDeviceSettingsMenu = []() { device->drawDeviceSettingsMenu(); };
 
-    auto onDeviceMenuItemSelected = []() {
-        device->onDeviceMenuItemSelected(currentOption);
-    };
+    auto onDeviceMenuItemSelected = []() { device->onDeviceMenuItemSelected(currentOption); };
 
     auto checkForUpdate = []() {
         // TODO: basically just say yes.
@@ -191,7 +172,7 @@ namespace actions {
         // Default tab: OSSM if connected, RADR otherwise
         if (device != nullptr && device->isConnected) {
             device->onMenuOpen();  // OSSM → menu.idle
-            activeTab = 0;  // OSSM tab
+            activeTab = 0;         // OSSM tab
             activeMenu = &ossmMenu;
             activeMenuCount = numOssmMenu;
         } else {
@@ -219,12 +200,10 @@ namespace actions {
         if (ossmRestartTimer != nullptr) {
             xTimerDelete(ossmRestartTimer, 0);
         }
-        ossmRestartTimer = xTimerCreate(
-            "ossmRestart", pdMS_TO_TICKS(8500), pdFALSE, nullptr,
-            [](TimerHandle_t) {
-                ossmRestartTimer = nullptr;
-                fireStateMachineDoneEvent();
-            });
+        ossmRestartTimer = xTimerCreate("ossmRestart", pdMS_TO_TICKS(8500), pdFALSE, nullptr, [](TimerHandle_t) {
+            ossmRestartTimer = nullptr;
+            fireStateMachineDoneEvent();
+        });
         xTimerStart(ossmRestartTimer, 0);
     };
 
@@ -246,12 +225,10 @@ namespace actions {
         if (ossmUpdateTimer != nullptr) {
             xTimerDelete(ossmUpdateTimer, 0);
         }
-        ossmUpdateTimer = xTimerCreate(
-            "ossmUpdate", pdMS_TO_TICKS(90000), pdFALSE, nullptr,
-            [](TimerHandle_t) {
-                ossmUpdateTimer = nullptr;
-                fireStateMachineDoneEvent();
-            });
+        ossmUpdateTimer = xTimerCreate("ossmUpdate", pdMS_TO_TICKS(90000), pdFALSE, nullptr, [](TimerHandle_t) {
+            ossmUpdateTimer = nullptr;
+            fireStateMachineDoneEvent();
+        });
         xTimerStart(ossmUpdateTimer, 0);
     };
 
@@ -262,16 +239,9 @@ namespace actions {
         }
     };
 
-    auto checkOssmUpdate = []() { startOssmUpdateCheck(); };
-
     auto sendStrokeEngine = []() {
         if (device == nullptr) return;
         device->enterStrokeEngineMode();
-    };
-
-    auto sendSimplePenetration = []() {
-        if (device == nullptr) return;
-        device->enterSimplePenetrationMode();
     };
 
     auto sendStreaming = []() {
@@ -340,12 +310,9 @@ namespace actions {
         detachInterrupt(digitalPinToInterrupt(pins::RIGHT_ENCODER_B));
 
         // Configure GPIO wake-up sources for light sleep
-        gpio_wakeup_enable(static_cast<gpio_num_t>(pins::BTN_UNDER_C),
-                           GPIO_INTR_LOW_LEVEL);
-        gpio_wakeup_enable(static_cast<gpio_num_t>(pins::BTN_UNDER_L),
-                           GPIO_INTR_LOW_LEVEL);
-        gpio_wakeup_enable(static_cast<gpio_num_t>(pins::BTN_UNDER_R),
-                           GPIO_INTR_LOW_LEVEL);
+        gpio_wakeup_enable(static_cast<gpio_num_t>(pins::BTN_UNDER_C), GPIO_INTR_LOW_LEVEL);
+        gpio_wakeup_enable(static_cast<gpio_num_t>(pins::BTN_UNDER_L), GPIO_INTR_LOW_LEVEL);
+        gpio_wakeup_enable(static_cast<gpio_num_t>(pins::BTN_UNDER_R), GPIO_INTR_LOW_LEVEL);
 
         // Enable GPIO wake-up
         esp_sleep_enable_gpio_wakeup();
@@ -357,7 +324,5 @@ namespace actions {
         // conflicts The restart will clean up everything properly
         espSilentRestart();
     };
-
-    auto checkOssmPairing = []() { startOssmPairingCheck(); };
 
 }  // namespace actions

@@ -12,31 +12,26 @@ static TaskHandle_t leftEncoderTaskHandle = nullptr;
 void leftEncoderMonitorTask(void *pvParameters) {
     leftEncoder.setEncoderValue(0);
     int lastLeftEncoderValue = leftEncoder.readEncoder();  // Initialize to zero
-    ESP_LOGI("LeftEncoderMonitor",
-             "Starting left encoder monitor task, initial value: %d",
-             lastLeftEncoderValue);
+    ESP_LOGI("LeftEncoderMonitor", "Starting left encoder monitor task, initial value: %d", lastLeftEncoderValue);
 
     // Function to check if we're in device states
     auto isInDeviceStates = []() -> bool {
         using namespace sml;
         bool inControl = stateMachine->is("device_draw_control"_s);
         bool inMenu = stateMachine->is("device_menu"_s);
-        bool inSimplePenetration = stateMachine->is("simple_penetration_control"_s);
-        return inControl || inMenu || inSimplePenetration;
+        return inControl || inMenu;
     };
 
     while (isInDeviceStates()) {
         int currentLeftEncoderValue = leftEncoder.readEncoder();
 
-        if (currentLeftEncoderValue != lastLeftEncoderValue ||
-            hasLeftEncoderChanged(false)) {
+        if (currentLeftEncoderValue != lastLeftEncoderValue || hasLeftEncoderChanged(false)) {
             setNotIdle("left_encoder");
             // Send encoder change to device
             if (device != nullptr) {
                 device->onLeftEncoderChange(currentLeftEncoderValue);
             } else {
-                ESP_LOGW("LeftEncoderMonitor",
-                         "Device is null, cannot send encoder change");
+                ESP_LOGW("LeftEncoderMonitor", "Device is null, cannot send encoder change");
             }
 
             lastLeftEncoderValue = currentLeftEncoderValue;
@@ -59,9 +54,8 @@ void startLeftEncoderMonitoring() {
         leftEncoderTaskHandle = nullptr;
     }
 
-    xTaskCreatePinnedToCore(leftEncoderMonitorTask, "leftEncoderMonitor",
-                            4 * configMINIMAL_STACK_SIZE, nullptr, 5,
-                            &leftEncoderTaskHandle, 1);
+    xTaskCreatePinnedToCore(leftEncoderMonitorTask, "leftEncoderMonitor", 4 * configMINIMAL_STACK_SIZE, nullptr, 5, &leftEncoderTaskHandle,
+                            1);
 }
 
 void stopLeftEncoderMonitoring() {

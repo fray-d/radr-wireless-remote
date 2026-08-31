@@ -77,8 +77,6 @@ class Device : public NimBLEClientCallbacks {
     virtual void enterStrokeEngineMode() {}
     virtual void enterSimplePenetrationMode() {}
     virtual void enterStreamingMode() {}
-    virtual bool isInSimplePenetrationMode() const { return false; }
-
     virtual void onRightEncoderChange(int value) {}
     virtual void onLeftEncoderChange(int value) {}
 
