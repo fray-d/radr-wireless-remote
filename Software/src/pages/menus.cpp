@@ -348,7 +348,10 @@ void drawMenuTask(void *pvParameters) {
         // Tick all display objects
         if (device != nullptr) {
             for (auto &displayObject : device->displayObjects) {
-                displayObject->tick();
+                if(displayObject && isInCorrectState()) {
+                    displayObject->tick();
+                    vTaskDelay(1 / portTICK_PERIOD_MS);
+                }
             }
         }
 
@@ -386,7 +389,7 @@ void drawMenu() {
     clearPage();
     // Reduced delay for faster startup
     vTaskDelay(10 / portTICK_PERIOD_MS);  // Reduced from 50ms to 10ms
-    xTaskCreatePinnedToCore(drawMenuTask, "drawMenuTask", 5 * configMINIMAL_STACK_SIZE, NULL, 5, &menuTaskHandle, 1);
+    xTaskCreatePinnedToCore(drawMenuTask, "drawMenuTask", 10 * configMINIMAL_STACK_SIZE, NULL, 5, &menuTaskHandle, 1);
 }
 
 // Device list management

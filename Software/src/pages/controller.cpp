@@ -84,8 +84,10 @@ void drawControllerTask(void *pvParameters) {
         lastRightShoulderState = currentRightShoulderState;
 
         for (auto &displayObject : device->displayObjects) {
-            displayObject->tick();
-            vTaskDelay(1 / portTICK_PERIOD_MS);
+            if(displayObject && isInCorrectState()) {
+                displayObject->tick();
+                vTaskDelay(1 / portTICK_PERIOD_MS);
+            }
         }
 
         vTaskDelay(16 / portTICK_PERIOD_MS);  // ~60fps for smooth updating.

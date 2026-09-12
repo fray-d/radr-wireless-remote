@@ -490,7 +490,10 @@ class OSSMAdvanced : public Device {
                     lastRightEncoderValue = currentRightEncoderValue;
                 }
                 for (auto &displayObject : device->displayObjects) {
-                    displayObject->tick();
+                    if(displayObject && stateMachine->is("device_menu"_s)) {
+                        displayObject->tick();
+                        vTaskDelay(1 / portTICK_PERIOD_MS);
+                    }
                 }
                 lastLeftShoulderState = currentLeftShoulderState;
                 lastRightShoulderState = currentRightShoulderState;
